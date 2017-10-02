@@ -4,7 +4,6 @@ gifinto - save GIF on stdin to file if size over set threshold
 
 *****************************************************************************/
 
-#include <unistd.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,11 +11,8 @@ gifinto - save GIF on stdin to file if size over set threshold
 #include <string.h>
 #include <stdbool.h>
 
-#ifdef _WIN32
-#include <io.h>
-#endif /* _WIN32 */
-
 #include "gif_lib.h"
+#include "gif_lib_private.h"
 #include "getarg.h"
 
 #define PROGRAM_NAME	"gifinto"
@@ -99,7 +95,7 @@ int main(int argc, char **argv)
     _setmode(0, O_BINARY);		  /* Make sure it is in binary mode. */
 #endif
 
-    Fin = fdopen(0, "rb");   /* Make it into a stream: */
+    Fin = posix_fdopen(0, "rb");   /* Make it into a stream: */
 
     if (Fin == NULL)
     {
@@ -130,7 +126,7 @@ int main(int argc, char **argv)
 #ifdef _WIN32
     char *tmpFN = _mktemp(FoutTmpName);
     if (tmpFN)
-	FD = open(tmpFN, O_CREAT | O_EXCL | O_WRONLY);
+	FD = posix_open(tmpFN, O_CREAT | O_EXCL | O_WRONLY);
     else
 	FD = -1;
 #else
@@ -140,7 +136,7 @@ int main(int argc, char **argv)
     {
 	GIF_EXIT("Failed to open output.");
     }
-    Fout = fdopen(FD, "wb"); /* returns a stream with FD */
+    Fout = posix_fdopen(FD, "wb"); /* returns a stream with FD */
     if (Fout == NULL )
     {
 	GIF_EXIT("Failed to open output.");
@@ -158,7 +154,7 @@ int main(int argc, char **argv)
     fclose(Fin);
     if (ftell(Fout) >= (long) MinFileSize) {
 	fclose(Fout);
-	unlink(*FileName);
+	posix_unlink(*FileName);
 	if (rename(FoutTmpName, *FileName) != 0) {
 	    char DefaultName[STRLEN+1];
 	    memset(DefaultName, '\0', sizeof(DefaultName));
@@ -173,14 +169,14 @@ int main(int argc, char **argv)
 		GIF_MESSAGE(s);
 	    }
 	    else {
-		unlink(FoutTmpName);
+		posix_unlink(FoutTmpName);
 		GIF_MESSAGE("Failed to rename out file - deleted.");
 	    }
 	}
     }
     else {
 	fclose(Fout);
-	unlink(FoutTmpName);
+	posix_unlink(FoutTmpName);
 	GIF_MESSAGE("File too small - not renamed.");
     }
 

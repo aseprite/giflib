@@ -10,6 +10,27 @@ gif_lib_private.h - internal giflib routines and structures
 #include "gif_lib.h"
 #include "gif_hash.h"
 
+#if !defined(_WIN32) || !defined(_MSC_VER)
+    #include <unistd.h>
+    #define posix_open   open
+    #define posix_close  close
+    #define posix_fdopen fdopen
+    #define posix_unlink unlink
+#endif
+
+#ifdef _WIN32
+    #include <io.h>
+    #ifdef _MSC_VER
+	#define posix_open   _open
+	#define posix_close  _close
+	#define posix_fdopen _fdopen
+	#define posix_unlink _unlink
+    #endif
+#else
+    #include <sys/types.h>
+#endif /* _WIN32 */
+#include <sys/stat.h>
+
 #ifndef SIZE_MAX
     #define SIZE_MAX     UINTPTR_MAX
 #endif

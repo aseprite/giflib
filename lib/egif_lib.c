@@ -8,19 +8,11 @@ two modules will be linked.  Preserve this property!
 
 *****************************************************************************/
 
-#include <unistd.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
-
-#ifdef _WIN32
-#include <io.h>
-#else
-#include <sys/types.h>
-#endif /* _WIN32 */
-#include <sys/stat.h>
 
 #include "gif_lib.h"
 #include "gif_lib_private.h"
@@ -65,11 +57,11 @@ EGifOpenFileName(const char *FileName, const bool TestExistence, int *Error)
     GifFileType *GifFile;
 
     if (TestExistence)
-        FileHandle = open(FileName, O_WRONLY | O_CREAT | O_EXCL, 
-			  S_IREAD | S_IWRITE);
+        FileHandle = posix_open(FileName, O_WRONLY | O_CREAT | O_EXCL,
+				S_IREAD | S_IWRITE);
     else
-        FileHandle = open(FileName, O_WRONLY | O_CREAT | O_TRUNC, 
-			  S_IREAD | S_IWRITE);
+        FileHandle = posix_open(FileName, O_WRONLY | O_CREAT | O_TRUNC,
+				S_IREAD | S_IWRITE);
 
     if (FileHandle == -1) {
         if (Error != NULL)
@@ -78,7 +70,7 @@ EGifOpenFileName(const char *FileName, const bool TestExistence, int *Error)
     }
     GifFile = EGifOpenFileHandle(FileHandle, Error);
     if (GifFile == (GifFileType *) NULL)
-        (void)close(FileHandle);
+        (void)posix_close(FileHandle);
     return GifFile;
 }
 
@@ -123,7 +115,7 @@ EGifOpenFileHandle(const int FileHandle, int *Error)
     _setmode(FileHandle, O_BINARY);    /* Make sure it is in binary mode. */
 #endif /* _WIN32 */
 
-    f = fdopen(FileHandle, "wb");    /* Make it into a stream: */
+    f = posix_fdopen(FileHandle, "wb");    /* Make it into a stream: */
 
     GifFile->Private = (void *)Private;
     Private->FileHandle = FileHandle;

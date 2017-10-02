@@ -12,13 +12,8 @@ two modules will be linked.  Preserve this property!
 #include <limits.h>
 #include <stdint.h>
 #include <fcntl.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <string.h>
-
-#ifdef _WIN32
-#include <io.h>
-#endif /* _WIN32 */
 
 #include "gif_lib.h"
 #include "gif_lib_private.h"
@@ -52,7 +47,7 @@ DGifOpenFileName(const char *FileName, int *Error)
     int FileHandle;
     GifFileType *GifFile;
 
-    if ((FileHandle = open(FileName, O_RDONLY)) == -1) {
+    if ((FileHandle = posix_open(FileName, O_RDONLY)) == -1) {
 	if (Error != NULL)
 	    *Error = D_GIF_ERR_OPEN_FAILED;
         return NULL;
@@ -79,7 +74,7 @@ DGifOpenFileHandle(int FileHandle, int *Error)
     if (GifFile == NULL) {
         if (Error != NULL)
 	    *Error = D_GIF_ERR_NOT_ENOUGH_MEM;
-        (void)close(FileHandle);
+        (void)posix_close(FileHandle);
         return NULL;
     }
 
@@ -93,7 +88,7 @@ DGifOpenFileHandle(int FileHandle, int *Error)
     if (Private == NULL) {
         if (Error != NULL)
 	    *Error = D_GIF_ERR_NOT_ENOUGH_MEM;
-        (void)close(FileHandle);
+        (void)posix_close(FileHandle);
         free((char *)GifFile);
         return NULL;
     }
@@ -104,7 +99,7 @@ DGifOpenFileHandle(int FileHandle, int *Error)
     _setmode(FileHandle, O_BINARY);    /* Make sure it is in binary mode. */
 #endif /* _WIN32 */
 
-    f = fdopen(FileHandle, "rb");    /* Make it into a stream: */
+    f = posix_fdopen(FileHandle, "rb");    /* Make it into a stream: */
 
     /*@-mustfreeonly@*/
     GifFile->Private = (void *)Private;
