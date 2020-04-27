@@ -143,7 +143,7 @@ DGifOpenFileHandle(int FileHandle, int *Error)
 
     /* What version of GIF? */
     Private->gif89 = (Buf[GIF_VERSION_POS] == '9');
-
+    GifFile->gif89 = Private->gif89;
     return GifFile;
 }
 
@@ -219,7 +219,7 @@ DGifOpen(void *userData, InputFunc readFunc, int *Error)
 
     /* What version of GIF? */
     Private->gif89 = (Buf[GIF_VERSION_POS] == '9');
-
+    GifFile->gif89 = Private->gif89;
     return GifFile;
 }
 

@@ -82,6 +82,7 @@ typedef struct GifFileType {
     int Error;			     /* Last error condition reported */
     void *UserData;                  /* hook to attach user data (TVT) */
     void *Private;                   /* Don't mess with this! */
+    bool gif89;
 } GifFileType;
 
 #define GIF_ASPECT_RATIO(n)	((n)+15.0/64.0)
